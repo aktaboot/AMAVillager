@@ -79,6 +79,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "amavillager"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bytes",
+ "rand",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "android_log-sys"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2708,17 +2719,6 @@ dependencies = [
  "base64",
  "bitflags",
  "serde",
-]
-
-[[package]]
-name = "rust-bevy"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bytes",
- "rand",
- "serde",
- "serde_json",
 ]
 
 [[package]]
