@@ -6,6 +6,7 @@ use std::fs;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use std::path::Path;
+use wasm_bindgen::prelude::*;
 
 use bevy::prelude::*;
 use bevy::app::AppExit;
@@ -62,6 +63,8 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
+        #[cfg(target_arch = "wasm32")]
+        .add_plugin(bevy_webgl2::WebGL2Plugin)
         .add_startup_system(setup.system())
         .add_startup_stage("", SystemStage::single(spawn_quizzitem.system()))
         .add_startup_stage("game_setup_actors", SystemStage::single(panel_spawn.system()))
