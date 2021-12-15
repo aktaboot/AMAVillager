@@ -2,7 +2,7 @@
 
 Train your villager shortcuts !
 
-![preview](/home/deimos/Desktop/learning-rust/amavillager/preview.png)
+![preview](preview.png)
 
 
 
