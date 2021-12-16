@@ -1,3 +1,3 @@
 fn main() {
-    AMAVillager::lib::run();
+    AMAVillager::run();
 }
