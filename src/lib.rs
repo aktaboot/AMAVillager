@@ -58,6 +58,10 @@ struct WinSize{
 
 #[wasm_bindgen]
 pub fn run() {
+    // When building for WASM, print panics to the browser console
+    #[cfg(target_arch = "wasm32")]
+    console_error_panic_hook::set_once();
+
     let mut app = App::build();
     
     app.add_plugins(DefaultPlugins);
@@ -76,7 +80,7 @@ pub fn run() {
         height: 600.0,
         ..Default::default()
     });
-    app.add_plugins(DefaultPlugins);
+    app.add_plugins(DefaultPlugins );
     app.add_startup_system(setup.system());
     app.add_startup_stage("", SystemStage::single(spawn_quizzitem.system()));
     app.add_startup_stage("game_setup_actors", SystemStage::single(panel_spawn.system()));
