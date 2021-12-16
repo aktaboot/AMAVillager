@@ -1,6 +1,6 @@
 [package]
 resolver = "2"
-name = "rust-bevy"
+name = "AMAVillager"
 version = "0.1.0"
 edition = "2021"
 

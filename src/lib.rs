@@ -57,7 +57,7 @@ struct WinSize{
 
 
 #[wasm_bindgen]
-pub fn run() {
+pub fn main() {
     let mut app = App::build();
     
     app.add_plugins(DefaultPlugins);

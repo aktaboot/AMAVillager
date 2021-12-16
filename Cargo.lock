@@ -3,6 +3,18 @@
 version = 3
 
 [[package]]
+name = "AMAVillager"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_webgl2",
+ "rand",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "Inflector"
 version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2842,18 +2854,6 @@ dependencies = [
  "base64",
  "bitflags",
  "serde",
-]
-
-[[package]]
-name = "rust-bevy"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_webgl2",
- "rand",
- "serde",
- "serde_json",
- "wasm-bindgen",
 ]
 
 [[package]]
