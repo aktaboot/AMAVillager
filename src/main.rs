@@ -7,6 +7,8 @@ use std::fs;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use std::path::Path;
+
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
 use bevy::prelude::*;

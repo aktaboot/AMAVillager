@@ -6,7 +6,8 @@
 <body>
 <script type="module">
   import init from "./target/wasm.js";
-  init("./target/wasm_bg.wasm").then(function (wasm) {
+  // init("./target/wasm_bg.wasm").then(function (wasm) {
+  init().then(function (wasm) {
     wasm.run();
   });
 </script>

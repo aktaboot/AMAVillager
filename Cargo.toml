@@ -14,12 +14,10 @@ bevy = { version = "0.5.0", default-features = false }
 rand = "0.8.4"
 serde = "1.0.131"
 serde_json = "1.0.72"
-wasm-bindgen = "0.2"
-console_error_panic_hook = "0.1"
 
-[profile.release]
-lto = "thin"
-opt-level = 's'
+# [profile.release]
+# lto = "thin"
+# opt-level = 's'
 
 # Dependencies for native only.
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -28,5 +26,7 @@ bevy = {version = "0.5", default-features = false, features = ["bevy_wgpu", "bev
 # Dependencies for WASM only.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 bevy = {version = "0.5", default-features = false, features = ["bevy_winit", "render"]}
+console_error_panic_hook = "0.1"
+wasm-bindgen = "0.2"
 bevy_webgl2 = "0.5"
 getrandom = "0.2.3"

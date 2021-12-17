@@ -17,6 +17,11 @@ Made with [Bevy](https://github.com/bevyengine/bevy).
 
 
 
+### Troubleshoot
+
+If getting `tracing` erros when building
+
+`cargo update -p tracing-wasm --precise 0.2.0`
 
 
 ## Roadmap
