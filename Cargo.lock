@@ -3,20 +3,6 @@
 version = 3
 
 [[package]]
-name = "AMAVillager"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_webgl2",
- "console_error_panic_hook",
- "getrandom",
- "rand",
- "serde",
- "serde_json",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "Inflector"
 version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -68,6 +54,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e37cfd5e7657ada45f742d6e99ca5788580b5c529dc78faf11ece6dc702656f"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "amavillager"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_webgl2",
+ "console_error_panic_hook",
+ "getrandom",
+ "rand",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
 ]
 
 [[package]]

@@ -105,7 +105,8 @@ fn setup(
     });
     
     // Buildings
-    let buildings: Vec<Building> = serde_json::from_reader(File::open("src/data.json").expect("Error while reading or parsing!"));
+    //let buildings: Vec<Building> = serde_json::from_reader(File::open("src/data.json").expect("Error while reading or parsing!"));
+    let buildings = serde_json::from_reader(File::open("src/data.json").expect("Error while reading or parsing!")).unwrap();
     commands.insert_resource(Buildings{buildings});
 
     // Materials
