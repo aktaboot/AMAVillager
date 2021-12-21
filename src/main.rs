@@ -71,8 +71,6 @@ fn main() {
     // when building for Web, use WebGL2 rendering
     #[cfg(target_arch = "wasm32")]
     app.add_plugin(bevy_webgl2::WebGL2Plugin);
-    
-
 
     app.insert_resource(ClearColor(Color::rgb(0., 0., 0.)));
     app.insert_resource(WindowDescriptor {
@@ -81,16 +79,12 @@ fn main() {
         height: 600.0,
         ..Default::default()
     });
-    app.add_plugins(DefaultPlugins );
     app.add_startup_system(setup.system());
     app.add_startup_stage("", SystemStage::single(spawn_quizzitem.system()));
     app.add_startup_stage("game_setup_actors", SystemStage::single(panel_spawn.system()));
     app.add_system(handle_quizz_keypresses.system());
     app.add_system(quizz_logic.system());
     app.add_system(quit.system());
-
-
-
     app.run();
 }
 
@@ -111,7 +105,7 @@ fn setup(
     });
     
     // Buildings
-    let buildings: Vec<Building> = serde_json::from_reader(File::open("src/data.json").unwrap()).expect("Error while reading or parsing!") ;
+    let buildings: Vec<Building> = serde_json::from_reader(File::open("src/data.json").expect("Error while reading or parsing!"));
     commands.insert_resource(Buildings{buildings});
 
     // Materials
