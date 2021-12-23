@@ -119,7 +119,7 @@ fn setup(
 }
 
 fn panel_spawn( mut commands: Commands, materials: Res<Materials>, win_size: Res<WinSize>) {
-    let bottom= - win_size.h / 2. ;
+    let bottom = - win_size.h / 2. ;
     commands.spawn_bundle(SpriteBundle {
         material: materials.materials.clone(),
         transform: Transform {
@@ -132,14 +132,14 @@ fn panel_spawn( mut commands: Commands, materials: Res<Materials>, win_size: Res
 
 fn spawn_quizzitem(mut commands: Commands,mut materials: ResMut<Assets<ColorMaterial>>, asset_server: Res<AssetServer>, buildings: Res<Buildings>){
 
-    let mut rng= thread_rng();
-    let building =buildings.buildings.choose(&mut rng).unwrap();
+    let mut rng = thread_rng();
+    let building = buildings.buildings.choose(&mut rng).unwrap();
     let fname =  "buildings/".to_owned() + &building.fname;
     
     let quizz_material = materials.add(asset_server.load(fname.as_str()).into());
-    let building=Building{fname:building.fname.clone(), key:building.key, age:building.age};
-    let solved= false;
-    println!("inside quizz spawn item ");
+    let building = Building{fname:building.fname.clone(), key:building.key, age:building.age};
+    let solved = false;
+    // println!("inside quizz spawn item "); //DEBUG
 
     commands.spawn_bundle(SpriteBundle {
             material: quizz_material.clone(),
@@ -166,7 +166,7 @@ fn quizz_logic( mut query: Query<(Entity, &mut Quizz), With<Quizz>>,
             if  let Ok((e, mut quizz)) = query.single_mut()  {
                 if (quizz.solved == true ){
                     commands.entity(e).despawn();
-                    quizz.solved=false;
+                    quizz.solved = false;
                     spawn_quizzitem(commands, materials, asset_server, buildings);
                 }
             }
@@ -180,23 +180,23 @@ fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
     use bevy::input::ElementState;
     
     if let Ok( mut quizz ) = query.single_mut() {
-        let mut building= quizz.building.clone();
-        let mut solved= quizz.solved;
+        let mut building = quizz.building.clone();
+        let mut solved = quizz.solved;
 
         for ev in key_evr.iter() {
             match ev.state {
                 ElementState::Pressed => {
-                    let valid_keys=[KeyCode::Q, KeyCode::W, KeyCode::E, KeyCode::R ];
+                    let valid_keys = [KeyCode::Q, KeyCode::W, KeyCode::E, KeyCode::R ];
                     // Press 'Esc' key to reset input
                     if( ev.key_code.unwrap_or(KeyCode::Compose) == KeyCode::Escape ){
-                        menu_state.age=0;    
+                        menu_state.age = 0;    
                         println!("Reset")
                     }
                     // Age Selection
                     else if( valid_keys.contains(&ev.key_code.unwrap_or(KeyCode::Compose))
                         && menu_state.age == 0 ) {
                             
-                            menu_state.age= match ev.key_code.unwrap(){
+                            menu_state.age = match ev.key_code.unwrap(){
                                 KeyCode::Q => 1,
                                 KeyCode::W => 2,
                                 KeyCode::E => 3,
@@ -211,13 +211,13 @@ fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
                     else if( menu_state.age == building.age
                              && ev.key_code.unwrap_or(KeyCode::Compose) == char2keycode(building.key).unwrap() ){
                             let elapsed_time = (quizz.start_time.elapsed().as_millis() as f64 ) / 1000.0;
-                            quizz.solved=true;
-                            menu_state.age=0;
+                            quizz.solved = true;
+                            menu_state.age = 0;
                             quizz.start_time = Instant::now();
                             time.total_time = time.total_time + elapsed_time;
                             time.total_quiz += 1;
                             println!("BINGO!");
-                            println!("time is: {0:.5}", elapsed_time);
+                            println!("quizz completion time is: {0:.5}", elapsed_time);
                     }
                     else{
                         println!("Nope! Retry")
@@ -238,7 +238,7 @@ fn quit(
     mut time: Res<TimeData>
 ) {
     if keys.pressed(KeyCode::LControl) && keys.pressed(KeyCode::C) {
-        println!("Your average time per puzzle was {0:.5} \nYou completed {1} quizes", time.total_time / time.total_quiz as f64 , time.total_quiz);
+        println!("Your average time per quizz was {0:.5} \nYou completed {1} quizzes", time.total_time / time.total_quiz as f64 , time.total_quiz);
         println!("Exiting...");
         exit.send(AppExit);
     }
