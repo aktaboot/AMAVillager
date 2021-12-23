@@ -10,11 +10,9 @@ Made with [Bevy](https://github.com/bevyengine/bevy).
 
 
 ## How to Run
-1. Install Rust and Cargo : [instructions](https://doc.rust-lang.org/cargo/getting-started/installation.html)
-2. clone the repository : `git clone https://github.com/aktaboot/AMAVillager.git` or download the repositiory [zip](https://github.com/aktaboot/AMAVillager/archive/refs/heads/main.zip)
-3. Move to the downloaded directory
-4. run `cargo run` in the Terminal
-
+* `cargo install cargo-make`
+* `cargo make serve`
+* go on `localhost:4000`in your browser 
 
 
 ### Troubleshoot
