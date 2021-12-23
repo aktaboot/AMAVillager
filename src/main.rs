@@ -57,7 +57,6 @@ struct WinSize{
 //  End Resources
 
 
-
 // #[wasm_bindgen]
 fn main() {
     // When building for WASM, print panics to the browser console
@@ -88,6 +87,7 @@ fn main() {
     app.run();
 }
 
+
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -104,11 +104,10 @@ fn setup(
         h: window.height()
     });
     
-    // Buildings
-    //let buildings: Vec<Building> = serde_json::from_reader(File::open("src/data.json").expect("Error while reading or parsing!"));
-    let buildings = serde_json::from_reader(File::open("src/data.json").expect("Error while reading or parsing!")).unwrap();
+    let json = include_bytes!("./data.json").as_ref();
+    let buildings = serde_json::from_slice(json).unwrap();
     commands.insert_resource(Buildings{buildings});
-
+    
     // Materials
     commands.insert_resource(Materials {
         materials: materials.add(asset_server.load(PANEL_SPRITE).into()),
@@ -142,14 +141,15 @@ fn panel_spawn( mut commands: Commands, materials: Res<Materials>, win_size: Res
 
 
 fn spawn_quizzitem(mut commands: Commands,mut materials: ResMut<Assets<ColorMaterial>>, asset_server: Res<AssetServer>, buildings: Res<Buildings>){
-
+    // Picking a random building
     let mut rng= thread_rng();
     let building =buildings.buildings.choose(&mut rng).unwrap();
     let fname =  "buildings/".to_owned() + &building.fname;
     
     let quizz_material= materials.add(asset_server.load(fname.as_str()).into());
-    let building=Building{fname:building.fname.clone(), key:building.key, age:building.age};
-    let solved= false;
+    let building = Building{fname:building.fname.clone(), key:building.key, age:building.age};
+    let solved = false;
+    
 
     commands.spawn_bundle(SpriteBundle {
             material: quizz_material.clone(),
@@ -248,6 +248,9 @@ fn quit(
     }
 }
 
+
+
+
 // Utility
 
 fn char2keycode( input: char) -> Result<KeyCode, ()>{
@@ -265,3 +268,4 @@ fn char2keycode( input: char) -> Result<KeyCode, ()>{
         _ => Err(()),
     }
 }
+
