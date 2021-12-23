@@ -1,11 +1,13 @@
 #![allow(unused)] //silence unused warning while learning
 
-
 use std::fs::File;
 use std::fs;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use std::path::Path;
+use std::time::{Duration, Instant};
+use std::time::{SystemTime, UNIX_EPOCH};
+use std::fmt;
 
 use bevy::prelude::*;
 use bevy::app::AppExit;
@@ -17,12 +19,12 @@ const PANEL_SPRITE: &str="abbasid_panel.png";
 const MENU1_KEYS: [char;4] = ['Q','W','E','R'];
 
 // EntitY Component System Resource
-
 // Begin Resources
 
 struct Quizz{
     building: Building,
     solved: bool,
+    start_time: Instant,
 }
 
 #[derive(Debug, Deserialize, Serialize,Clone)]
@@ -41,15 +43,18 @@ pub struct MenuState {
 }
 
 pub struct Materials {
-    materials: Handle<ColorMaterial>,
+    materials: Handle<ColorMaterial>, 
+}
+
+struct TimeData {
+    total_time: f64,//Decimal,
+    total_quiz: i64,
 }
 
 struct WinSize{
     w: f32,
     h: f32,
 }
-
-
 //  End Resources
 
 fn main() {
@@ -61,6 +66,10 @@ fn main() {
             height: 600.0,
             ..Default::default()
         })
+        .insert_resource(TimeData {
+            total_time: 0.0,
+            total_quiz: 0
+        })
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup.system())
         .add_startup_stage("", SystemStage::single(spawn_quizzitem.system()))
@@ -70,7 +79,6 @@ fn main() {
         .add_system(quit.system())
         .run();
 }
-
 
 fn setup(
     mut commands: Commands,
@@ -110,7 +118,6 @@ fn setup(
     window.set_position(IVec2::new(0, 0));
 }
 
-
 fn panel_spawn( mut commands: Commands, materials: Res<Materials>, win_size: Res<WinSize>) {
     let bottom= - win_size.h / 2. ;
     commands.spawn_bundle(SpriteBundle {
@@ -123,16 +130,16 @@ fn panel_spawn( mut commands: Commands, materials: Res<Materials>, win_size: Res
     });
 }
 
-
 fn spawn_quizzitem(mut commands: Commands,mut materials: ResMut<Assets<ColorMaterial>>, asset_server: Res<AssetServer>, buildings: Res<Buildings>){
 
     let mut rng= thread_rng();
     let building =buildings.buildings.choose(&mut rng).unwrap();
     let fname =  "buildings/".to_owned() + &building.fname;
     
-    let quizz_material= materials.add(asset_server.load(fname.as_str()).into());
+    let quizz_material = materials.add(asset_server.load(fname.as_str()).into());
     let building=Building{fname:building.fname.clone(), key:building.key, age:building.age};
     let solved= false;
+    println!("inside quizz spawn item ");
 
     commands.spawn_bundle(SpriteBundle {
             material: quizz_material.clone(),
@@ -145,6 +152,7 @@ fn spawn_quizzitem(mut commands: Commands,mut materials: ResMut<Assets<ColorMate
         .insert(Quizz{ 
             building,
             solved,
+            start_time: Instant::now(),
         });
 } 
 
@@ -157,7 +165,6 @@ fn quizz_logic( mut query: Query<(Entity, &mut Quizz), With<Quizz>>,
         ){
             if  let Ok((e, mut quizz)) = query.single_mut()  {
                 if (quizz.solved == true ){
-                    //remove current quizz entity ,spanw a new one
                     commands.entity(e).despawn();
                     quizz.solved=false;
                     spawn_quizzitem(commands, materials, asset_server, buildings);
@@ -165,20 +172,20 @@ fn quizz_logic( mut query: Query<(Entity, &mut Quizz), With<Quizz>>,
             }
 }
 
-
 fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Quizz), With<Quizz>>,
     mut key_evr: EventReader<KeyboardInput>,
+    mut time: ResMut<TimeData>,
     mut menu_state: ResMut<MenuState>){
     use bevy::input::ElementState;
     
     if let Ok( mut quizz ) = query.single_mut() {
         let mut building= quizz.building.clone();
         let mut solved= quizz.solved;
+
         for ev in key_evr.iter() {
             match ev.state {
                 ElementState::Pressed => {
-                    // println!("Key press: {:?} ({})", ev.key_code, ev.scan_code)
                     let valid_keys=[KeyCode::Q, KeyCode::W, KeyCode::E, KeyCode::R ];
                     // Press 'Esc' key to reset input
                     if( ev.key_code.unwrap_or(KeyCode::Compose) == KeyCode::Escape ){
@@ -200,13 +207,17 @@ fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
                             building.age;
                             println!("Age Select {}", menu_state.age);
                     }
-                    // Building Selection 
+                    // Correct Selection 
                     else if( menu_state.age == building.age
                              && ev.key_code.unwrap_or(KeyCode::Compose) == char2keycode(building.key).unwrap() ){
-                        
-                            println!("BINGO!");
+                            let elapsed_time = (quizz.start_time.elapsed().as_millis() as f64 ) / 1000.0;
                             quizz.solved=true;
                             menu_state.age=0;
+                            quizz.start_time = Instant::now();
+                            time.total_time = time.total_time + elapsed_time;
+                            time.total_quiz += 1;
+                            println!("BINGO!");
+                            println!("time is: {0:.5}", elapsed_time);
                     }
                     else{
                         println!("Nope! Retry")
@@ -223,16 +234,17 @@ fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
 
 fn quit(
     keys: Res<Input<KeyCode>>,
-    mut exit: EventWriter<AppExit>
+    mut exit: EventWriter<AppExit>,
+    mut time: Res<TimeData>
 ) {
     if keys.pressed(KeyCode::LControl) && keys.pressed(KeyCode::C) {
+        println!("Your average time per puzzle was {0:.5} \nYou completed {1} quizes", time.total_time / time.total_quiz as f64 , time.total_quiz);
         println!("Exiting...");
         exit.send(AppExit);
     }
 }
 
 // Utility
-
 fn char2keycode( input: char) -> Result<KeyCode, ()>{
     match input {
         'Q' => Ok(KeyCode::Q),
@@ -248,4 +260,3 @@ fn char2keycode( input: char) -> Result<KeyCode, ()>{
         _ => Err(()),
     }
 }
-
