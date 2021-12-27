@@ -2,6 +2,8 @@
 
 Train your villager shortcuts !
 
+Now hosted [here](https://aktaboot.github.io/AMAVillager)
+
 ![preview](preview.png)
 
 
