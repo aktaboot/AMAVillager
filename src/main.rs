@@ -9,6 +9,7 @@ use std::time::{Duration, Instant};
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::fmt;
 
+
 use bevy::prelude::*;
 use bevy::app::AppExit;
 use bevy::input::keyboard::KeyboardInput;
@@ -43,7 +44,7 @@ pub struct MenuState {
 }
 
 pub struct Materials {
-    materials: Handle<ColorMaterial>, 
+    materials: Handle<ColorMaterial>,
 }
 
 struct TimeData {
@@ -95,9 +96,11 @@ fn setup(
         w: window.width(),
         h: window.height()
     });
-    
+
     // Buildings
-    let buildings: Vec<Building> = serde_json::from_reader(File::open("src/data.json").unwrap()).expect("Error while reading or parsing!") ;
+    let buildings= serde_json::from_reader(File::open("src/data.json")
+                                                           .unwrap())
+    .expect("Error while reading or parsing!") ;
     commands.insert_resource(Buildings{buildings});
 
     // Materials
@@ -113,7 +116,7 @@ fn setup(
 
     // camera
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-    
+
     //position window
     window.set_position(IVec2::new(0, 0));
 }
@@ -135,7 +138,7 @@ fn spawn_quizzitem(mut commands: Commands,mut materials: ResMut<Assets<ColorMate
     let mut rng = thread_rng();
     let building = buildings.buildings.choose(&mut rng).unwrap();
     let fname =  "buildings/".to_owned() + &building.fname;
-    
+
     let quizz_material = materials.add(asset_server.load(fname.as_str()).into());
     let building = Building{fname:building.fname.clone(), key:building.key, age:building.age};
     let solved = false;
@@ -149,12 +152,12 @@ fn spawn_quizzitem(mut commands: Commands,mut materials: ResMut<Assets<ColorMate
             },
             ..Default::default()
         })
-        .insert(Quizz{ 
+        .insert(Quizz{
             building,
             solved,
             start_time: Instant::now(),
         });
-} 
+}
 
 fn quizz_logic( mut query: Query<(Entity, &mut Quizz), With<Quizz>>,
                 // mut exit: EventWriter<AppExit>,
@@ -178,7 +181,7 @@ fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
     mut time: ResMut<TimeData>,
     mut menu_state: ResMut<MenuState>){
     use bevy::input::ElementState;
-    
+
     if let Ok( mut quizz ) = query.single_mut() {
         let mut building = quizz.building.clone();
         let mut solved = quizz.solved;
@@ -189,13 +192,13 @@ fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
                     let valid_keys = [KeyCode::Q, KeyCode::W, KeyCode::E, KeyCode::R ];
                     // Press 'Esc' key to reset input
                     if( ev.key_code.unwrap_or(KeyCode::Compose) == KeyCode::Escape ){
-                        menu_state.age = 0;    
+                        menu_state.age = 0;
                         println!("Reset")
                     }
                     // Age Selection
                     else if( valid_keys.contains(&ev.key_code.unwrap_or(KeyCode::Compose))
                         && menu_state.age == 0 ) {
-                            
+
                             menu_state.age = match ev.key_code.unwrap(){
                                 KeyCode::Q => 1,
                                 KeyCode::W => 2,
@@ -207,7 +210,7 @@ fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
                             building.age;
                             println!("Age Select {}", menu_state.age);
                     }
-                    // Correct Selection 
+                    // Correct Selection
                     else if( menu_state.age == building.age
                              && ev.key_code.unwrap_or(KeyCode::Compose) == char2keycode(building.key).unwrap() ){
                             let elapsed_time = (quizz.start_time.elapsed().as_millis() as f64 ) / 1000.0;
@@ -238,7 +241,9 @@ fn quit(
     mut time: Res<TimeData>
 ) {
     if keys.pressed(KeyCode::LControl) && keys.pressed(KeyCode::C) {
-        println!("Your average time per quizz was {0:.5} \nYou completed {1} quizzes", time.total_time / time.total_quiz as f64 , time.total_quiz);
+        println!("Your average time per quizz was {0:.5}", 
+                 time.total_time / time.total_quiz as f64 );
+        println!("You completed {} quizzes", time.total_quiz);
         println!("Exiting...");
         exit.send(AppExit);
     }
