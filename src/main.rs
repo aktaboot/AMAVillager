@@ -1,6 +1,4 @@
-
 #![allow(unused)] //silence unused warning while learning
-
 
 use std::fs::File;
 use std::fs;
@@ -8,12 +6,14 @@ use rand::thread_rng;
 use rand::seq::SliceRandom;
 use std::path::Path;
 
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::prelude::*;
-
 use bevy::prelude::*;
 use bevy::app::AppExit;
 use bevy::input::keyboard::KeyboardInput;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+#[cfg(target_arch = "wasm32")]
+use web_sys;
 
 use serde::{Deserialize, Serialize};
 
@@ -23,10 +23,10 @@ const MENU1_KEYS: [char;4] = ['Q','W','E','R'];
 // EntitY Component System Resource
 
 // Begin Resources
-
 struct Quizz{
     building: Building,
     solved: bool,
+    start_time: f64
 }
 
 #[derive(Debug, Deserialize, Serialize,Clone)]
@@ -48,14 +48,16 @@ pub struct Materials {
     materials: Handle<ColorMaterial>,
 }
 
+struct Stats {
+    total_time: f64,
+    total_quizz: i64,
+}
+
 struct WinSize{
     w: f32,
     h: f32,
 }
-
-
 //  End Resources
-
 
 // #[wasm_bindgen]
 fn main() {
@@ -74,9 +76,13 @@ fn main() {
     app.insert_resource(ClearColor(Color::rgb(0., 0., 0.)));
     app.insert_resource(WindowDescriptor {
         title: "AMAVillager".to_string(),
-        width: 600.0,
-        height: 600.0,
+        // width: 600.0,
+        // height: 600.0,
         ..Default::default()
+    });
+    app.insert_resource( Stats {
+        total_time: 0.0,
+        total_quizz: 0
     });
     app.add_startup_system(setup.system());
     app.add_startup_stage("", SystemStage::single(spawn_quizzitem.system()));
@@ -87,16 +93,13 @@ fn main() {
     app.run();
 }
 
-
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut windows: ResMut<Windows>
 ){
-
     //========== BEGIN RESOURCES
-
     // WinSize
     let window = windows.get_primary_mut().unwrap();
     commands.insert_resource(WinSize {
@@ -126,7 +129,6 @@ fn setup(
     window.set_position(IVec2::new(0, 0));
 }
 
-
 fn panel_spawn( mut commands: Commands, materials: Res<Materials>, win_size: Res<WinSize>) {
     let bottom= - win_size.h / 2. ;
     commands.spawn_bundle(SpriteBundle {
@@ -138,7 +140,6 @@ fn panel_spawn( mut commands: Commands, materials: Res<Materials>, win_size: Res
         ..Default::default()
     });
 }
-
 
 fn spawn_quizzitem(mut commands: Commands,mut materials: ResMut<Assets<ColorMaterial>>, asset_server: Res<AssetServer>, buildings: Res<Buildings>){
     // Picking a random building
@@ -162,7 +163,9 @@ fn spawn_quizzitem(mut commands: Commands,mut materials: ResMut<Assets<ColorMate
         .insert(Quizz{ 
             building,
             solved,
+            start_time: now(),
         });
+        // web_sys::console::log_1(&now().into());
 } 
 
 fn quizz_logic( mut query: Query<(Entity, &mut Quizz), With<Quizz>>,
@@ -178,14 +181,14 @@ fn quizz_logic( mut query: Query<(Entity, &mut Quizz), With<Quizz>>,
                     commands.entity(e).despawn();
                     quizz.solved=false;
                     spawn_quizzitem(commands, materials, asset_server, buildings);
-                }
+                } 
             }
 }
-
 
 fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Quizz), With<Quizz>>,
     mut key_evr: EventReader<KeyboardInput>,
+    mut stats: ResMut<Stats>,
     mut menu_state: ResMut<MenuState>){
     use bevy::input::ElementState;
     
@@ -200,7 +203,7 @@ fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
                     // Press 'Esc' key to reset input
                     if( ev.key_code.unwrap_or(KeyCode::Compose) == KeyCode::Escape ){
                         menu_state.age=0;    
-                        println!("Reset")
+                        // println!("Reset")
                     }
                     // Age Selection
                     else if( valid_keys.contains(&ev.key_code.unwrap_or(KeyCode::Compose))
@@ -215,18 +218,21 @@ fn handle_quizz_keypresses(keyboard_input: Res<Input<KeyCode>>,
                             };
 
                             building.age;
-                            println!("Age Select {}", menu_state.age);
+                            // println!("Age Select {}", menu_state.age);
                     }
                     // Building Selection 
                     else if( menu_state.age == building.age
                              && ev.key_code.unwrap_or(KeyCode::Compose) == char2keycode(building.key).unwrap() ){
-                        
-                            println!("BINGO!");
+                            let elapsed_time = now() - quizz.start_time;
+                            stats.total_time = stats.total_time + elapsed_time;
+                            stats.total_quizz += 1;
                             quizz.solved=true;
                             menu_state.age=0;
+                            // println!("BINGO!");
+                            web_sys::console::log_2(&"Quizz completion time is: ".into(),&elapsed_time.into());
                     }
                     else{
-                        println!("Nope! Retry")
+                        // println!("Nope! Retry")
                     }
 
                 }
@@ -248,11 +254,7 @@ fn quit(
     }
 }
 
-
-
-
 // Utility
-
 fn char2keycode( input: char) -> Result<KeyCode, ()>{
     match input {
         'Q' => Ok(KeyCode::Q),
@@ -269,3 +271,14 @@ fn char2keycode( input: char) -> Result<KeyCode, ()>{
     }
 }
 
+fn now() -> f64 {
+    web_sys::window()
+        .expect("should have a Window")
+        .performance()
+        .expect("should have a Performance")
+        .now()
+}
+
+
+                    // web_sys::console::time_with_label("hello");
+                    // web_sys::console::time_end_with_label("hello");
